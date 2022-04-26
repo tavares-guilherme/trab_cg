@@ -1,86 +1,79 @@
-# ship - gui
-# star - mat
-# coin - 
-# final_flag - jun
-# wall - mat
-
-
 import glfw
 from OpenGL.GL import *
 import OpenGL.GL.shaders
 import numpy as np
-import ship
-import star
-import coin
-import flag
 
-glfw.init()
+import ship, star, coin, flag
+
 
 # Janela
-glfw.window_hint(glfw.VISIBLE, glfw.FALSE)
-window = glfw.create_window(700, 700, "Trabalho 1 CG", None, None)
-glfw.make_context_current(window)
+def initWindow():
+    glfw.init()
+    glfw.window_hint(glfw.VISIBLE, glfw.FALSE)
+    window = glfw.create_window(700, 700, "Trabalho 1 CG", None, None)
+    glfw.make_context_current(window)
 
-# Define eventos do teclado
-def key_event(window,button,action,mods):
-    print('[key event] button=',button)
-    print('[key event] action=',action)
-    print('[key event] mods=',mods)
-    print('-------')
-glfw.set_key_callback(window, key_event)
+    return window
 
-
-vertex_code = """
-        attribute vec2 position;
-        void main(){
-            gl_Position = vec4(position,0.0,1.0);
-        }
-        """
-
-fragment_code = """
-        uniform vec4 color;
-        void main(){
-            gl_FragColor = color;
-        }
-        """
-
-# Request a program and shader slots from GPU
-program  = glCreateProgram()
-vertex   = glCreateShader(GL_VERTEX_SHADER)
-fragment = glCreateShader(GL_FRAGMENT_SHADER)
-
-# Set shaders source
-glShaderSource(vertex, vertex_code)
-glShaderSource(fragment, fragment_code)
-
-# Compile shaders
-glCompileShader(vertex)
-if not glGetShaderiv(vertex, GL_COMPILE_STATUS):
-    error = glGetShaderInfoLog(vertex).decode()
-    print(error)
-    raise RuntimeError("Erro de compilacao do Vertex Shader")
-
-glCompileShader(fragment)
-if not glGetShaderiv(fragment, GL_COMPILE_STATUS):
-    error = glGetShaderInfoLog(fragment).decode()
-    print(error)
-    raise RuntimeError("Erro de compilacao do Fragment Shader")
-
-# Attach shader objects to the program
-glAttachShader(program, vertex)
-glAttachShader(program, fragment)
-
-# Build program
-glLinkProgram(program)
-if not glGetProgramiv(program, GL_LINK_STATUS):
-    print(glGetProgramInfoLog(program))
-    raise RuntimeError('Linking error')
+def vertexShader3D():
+    vertex_code = """
+            attribute vec2 position;
+            void main(){
+                gl_Position = vec4(position,0.0,1.0);
+            }
+            """
     
-# Make program the default program
-glUseProgram(program)
+    vertex = glCreateShader(GL_VERTEX_SHADER)
+    glShaderSource(vertex, vertex_code)
+    
+    glCompileShader(vertex)
+    if not glGetShaderiv(vertex, GL_COMPILE_STATUS):
+        error = glGetShaderInfoLog(vertex).decode()
+        print(error)
+        raise RuntimeError("Erro de compilacao do Vertex Shader")
 
-#myShip = ship.Ship()
-#myShip.loadShape(program)
+    return vertex
+
+def fragmentShader():
+    fragment_code = """
+            uniform vec4 color;
+            void main(){
+                gl_FragColor = color;
+            }
+            """
+
+    fragment = glCreateShader(GL_FRAGMENT_SHADER)
+    glShaderSource(fragment, fragment_code)
+
+    glCompileShader(fragment)
+    if not glGetShaderiv(fragment, GL_COMPILE_STATUS):
+        error = glGetShaderInfoLog(fragment).decode()
+        print(error)
+        raise RuntimeError("Erro de compilacao do Fragment Shader")
+
+    return fragment
+
+def programCreate():
+    program  = glCreateProgram()
+    
+    vertex = vertexShader3D()
+    glAttachShader(program, vertex)
+    
+    fragment = fragmentShader()
+    glAttachShader(program, fragment)
+
+    glLinkProgram(program)
+    if not glGetProgramiv(program, GL_LINK_STATUS):
+        print(glGetProgramInfoLog(program))
+        raise RuntimeError('Linking error')
+
+    glUseProgram(program)
+
+    return program
+
+window = initWindow()
+program = programCreate()
+
 
 count = 0
 vertices = np.zeros(84, [("position", np.float32, 2)])
@@ -112,7 +105,7 @@ for i in range(myShip1.vertices.size):
    vertices[i+myShip1.offset-1] = myShip1.vertices[i]
 
 
-# Get Ship1 points
+# Get Ship2 points
 myShip2 = ship.Ship2()
 myShip2.offset = count;count += myShip2.vertices.size; 
 vertices = np.append(vertices, myShip2.vertices)
