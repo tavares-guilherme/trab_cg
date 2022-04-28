@@ -39,10 +39,11 @@ class UFO:
 
 
     def drawShape(self, loc_color):
-        glDrawArrays(GL_TRIANGLE_FAN, self.offset, 6)
-
         glUniform4f(loc_color, 0, 200, 0, 1.0)  
         glDrawArrays(GL_TRIANGLE_FAN, self.offset + 6, 16)
+
+        glUniform4f(loc_color, 1, 1, 1, 1.0)
+        glDrawArrays(GL_TRIANGLE_FAN, self.offset, 6)
                             
 
 
