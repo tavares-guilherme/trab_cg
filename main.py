@@ -1,141 +1,166 @@
-# ship - gui
-# star - mat
-# coin - 
-# final_flag - jun
-# wall - mat
-
-
 import glfw
 from OpenGL.GL import *
 import OpenGL.GL.shaders
 import numpy as np
-import ship
-import star
-import coin
-import flag
+import math
 
-glfw.init()
+import ship, star, coin, planet, ufo
+
 
 # Janela
-glfw.window_hint(glfw.VISIBLE, glfw.FALSE)
-window = glfw.create_window(700, 700, "Trabalho 1 CG", None, None)
-glfw.make_context_current(window)
+def initWindow():
+    glfw.init()
+    glfw.window_hint(glfw.VISIBLE, glfw.FALSE)
+    window = glfw.create_window(700, 700, "Trabalho 1 CG", None, None)
+    glfw.make_context_current(window)
 
-# Define eventos do teclado
-def key_event(window,button,action,mods):
-    print('[key event] button=',button)
-    print('[key event] action=',action)
-    print('[key event] mods=',mods)
-    print('-------')
-glfw.set_key_callback(window, key_event)
+    return window
 
-
-vertex_code = """
+def vertexShader():
+    vertex_code = """
         attribute vec2 position;
+        uniform mat4 mat_transformation;
         void main(){
-            gl_Position = vec4(position,0.0,1.0);
+            gl_Position = mat_transformation * vec4(position,0.0,1.0);
         }
-        """
-
-fragment_code = """
-        uniform vec4 color;
-        void main(){
-            gl_FragColor = color;
-        }
-        """
-
-# Request a program and shader slots from GPU
-program  = glCreateProgram()
-vertex   = glCreateShader(GL_VERTEX_SHADER)
-fragment = glCreateShader(GL_FRAGMENT_SHADER)
-
-# Set shaders source
-glShaderSource(vertex, vertex_code)
-glShaderSource(fragment, fragment_code)
-
-# Compile shaders
-glCompileShader(vertex)
-if not glGetShaderiv(vertex, GL_COMPILE_STATUS):
-    error = glGetShaderInfoLog(vertex).decode()
-    print(error)
-    raise RuntimeError("Erro de compilacao do Vertex Shader")
-
-glCompileShader(fragment)
-if not glGetShaderiv(fragment, GL_COMPILE_STATUS):
-    error = glGetShaderInfoLog(fragment).decode()
-    print(error)
-    raise RuntimeError("Erro de compilacao do Fragment Shader")
-
-# Attach shader objects to the program
-glAttachShader(program, vertex)
-glAttachShader(program, fragment)
-
-# Build program
-glLinkProgram(program)
-if not glGetProgramiv(program, GL_LINK_STATUS):
-    print(glGetProgramInfoLog(program))
-    raise RuntimeError('Linking error')
+    """
     
-# Make program the default program
-glUseProgram(program)
+    vertex = glCreateShader(GL_VERTEX_SHADER)
+    glShaderSource(vertex, vertex_code)
+    
+    glCompileShader(vertex)
+    if not glGetShaderiv(vertex, GL_COMPILE_STATUS):
+        error = glGetShaderInfoLog(vertex).decode()
+        print(error)
+        raise RuntimeError("Erro de compilacao do Vertex Shader")
 
-#myShip = ship.Ship()
-#myShip.loadShape(program)
+    return vertex
 
-count = 0
-vertices = np.zeros(84, [("position", np.float32, 2)])
+def fragmentShader():
+    fragment_code = """
+            uniform vec4 color;
+            void main(){
+                gl_FragColor = color;
+            }
+            """
 
-# Get the Coin points
-myCoin = coin.Coin();myCoin.findPoints()
-myCoin.offset = count;count += myCoin.vertices.size; 
-for i in range(myCoin.vertices.size):
-    vertices[i+myCoin.offset] = myCoin.vertices[i]
+    fragment = glCreateShader(GL_FRAGMENT_SHADER)
+    glShaderSource(fragment, fragment_code)
 
-# Get the Star points
-myStar = star.Star()
-myStar.offset = count;count += myStar.vertices.size; 
-for i in range(myStar.vertices.size):
-    vertices[i+myStar.offset-1] = myStar.vertices[i]
+    glCompileShader(fragment)
+    if not glGetShaderiv(fragment, GL_COMPILE_STATUS):
+        error = glGetShaderInfoLog(fragment).decode()
+        print(error)
+        raise RuntimeError("Erro de compilacao do Fragment Shader")
 
-# Get the Flag points
-myFlag = flag.Flag()
-myFlag.offset = count;count += myFlag.vertices.size; 
-vertices = np.append(vertices, myFlag.vertices)
-for i in range(myFlag.vertices.size):
-   vertices[i+myFlag.offset-1] = myFlag.vertices[i]
+    return fragment
 
-# Get Ship1 points
-myShip1 = ship.Ship1()
-myShip1.offset = count;count += myShip1.vertices.size; 
-vertices = np.append(vertices, myShip1.vertices)
-for i in range(myShip1.vertices.size):
-   vertices[i+myShip1.offset-1] = myShip1.vertices[i]
+def programCreate():
+    program  = glCreateProgram()
+    
+    vertex = vertexShader()
+    glAttachShader(program, vertex)
+    
+    fragment = fragmentShader()
+    glAttachShader(program, fragment)
+
+    glLinkProgram(program)
+    if not glGetProgramiv(program, GL_LINK_STATUS):
+        print(glGetProgramInfoLog(program))
+        raise RuntimeError('Linking error')
+
+    glUseProgram(program)
+
+    return program
+
+def setVertices(myCoin, uStar, rStar, ldStar, myPlanet, myShip, myUFO, offset_tot):
+    vertices = np.zeros(offset_tot, [("position", np.float32, 2)])
+
+    for i in range(myCoin.vertices.size):
+        vertices[i + myCoin.offset] = myCoin.vertices[i]
+        
+    for i in range(uStar.vertices.size):
+        vertices[i + uStar.offset] = uStar.vertices[i]
+
+    for i in range(rStar.vertices.size):
+        vertices[i + rStar.offset] = rStar.vertices[i]
+
+    for i in range(ldStar.vertices.size):
+        vertices[i + ldStar.offset] = ldStar.vertices[i]
+
+    for i in range(myPlanet.vertices.size):
+        vertices[i + myPlanet.offset] = myPlanet.vertices[i]
+
+    for i in range(myShip.vertices.size):
+        vertices[i + myShip.offset] = myShip.vertices[i]
+
+    for i in range(myUFO.vertices.size):
+        vertices[i + myUFO.offset] = myUFO.vertices[i]
+
+    buffer = glGenBuffers(1)
+    glBindBuffer(GL_ARRAY_BUFFER, buffer)
+    glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_DYNAMIC_DRAW)
+    glBindBuffer(GL_ARRAY_BUFFER, buffer)
+
+    return vertices
+
+def key_event(window,key,scancode,action,mods):
+    global s_ufo, dg_planet, tx_ship, ty_ship, dg_ship
+
+    if key == 265:      #cima
+        ty_ship += 0.01
+        dg_ship = 0 * math.pi
+    
+    if key == 264:      # baixo
+        ty_ship -= 0.01
+        dg_ship = 1 * math.pi
+
+    if key == 263:      #esquerda
+        tx_ship -= 0.01
+        dg_ship = 0.5 * math.pi
+
+    if key == 262:      #direita
+        tx_ship += 0.01
+        dg_ship = 1.5 * math.pi
+
+    if key ==  32: dg_planet += 0.05  # espaço
+
+    if key ==  65: s_ufo += 0.05     # A
+    if key ==  90: s_ufo -= 0.05     # Z
 
 
-# Get Ship1 points
-myShip2 = ship.Ship2()
-myShip2.offset = count;count += myShip2.vertices.size; 
-vertices = np.append(vertices, myShip2.vertices)
-for i in range(myShip2.vertices.size):
-   vertices[i+myShip2.offset-1] = myShip2.vertices[i]
+myCoin = coin.Coin(0, 0.7, -0.7, 1)
+offset_at = myCoin.vertices.size
+
+uStar = star.Star(offset_at, 0.15, 0.7, 0.6)
+offset_at += uStar.vertices.size
+
+rStar = star.Star(offset_at, 0.6, -0.2, 0.5)
+offset_at += rStar.vertices.size
+
+ldStar = star.Star(offset_at, -0.6, -0.6, 0.5)
+offset_at += ldStar.vertices.size
+
+myPlanet = planet.Planet(offset_at, 0.7, 0.6)
+offset_at += myPlanet.vertices.size
+
+myShip = ship.Ship(offset_at, -0.5, 0.5)
+offset_at += myShip.vertices.size
+
+myUFO = ufo.UFO(offset_at, 0, -0.7)
+offset_at += myUFO.vertices.size
 
 
-buffer = glGenBuffers(1)
+window = initWindow()
+program = programCreate()
 
-# Make this buffer the default one
-glBindBuffer(GL_ARRAY_BUFFER, buffer)
-
-glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_DYNAMIC_DRAW)
-glBindBuffer(GL_ARRAY_BUFFER, buffer)
-
-# Bind the position attribute
-# --------------------------------------
+vertices = setVertices(myCoin, myPlanet, uStar, rStar, ldStar, myShip, myUFO, offset_at)
 stride = vertices.strides[0]
 offset = ctypes.c_void_p(0)
 
+
 loc = glGetAttribLocation(program, "position")
 glEnableVertexAttribArray(loc)
-
 glVertexAttribPointer(loc, 2, GL_FLOAT, False, stride, offset)
 
 loc_color = glGetUniformLocation(program, "color")
@@ -147,6 +172,14 @@ rValue= 66.0 / 255.0
 gValue= 135.0 / 255.0
 bValue= 245.0 / 255.0
 
+glfw.set_key_callback(window,key_event)
+
+s_ufo = 1
+dg_planet = 0
+tx_ship = 0
+ty_ship = 0
+dg_ship = 0
+dg_star = 0
 while not glfw.window_should_close(window):
 
     # funcao interna do glfw para gerenciar eventos de mouse, teclado, etc
@@ -155,13 +188,17 @@ while not glfw.window_should_close(window):
     # limpa a cor de fundo da janela e preenche com outra no sistema RGBA
     glClear(GL_COLOR_BUFFER_BIT)     
     glClearColor(rValue, gValue, bValue, 1.0)
-    
-    myCoin.drawShape(loc_color)
-    myStar.drawShape(loc_color)
-    myFlag.drawShape()
-    myShip1.drawShape(loc_color)
-    myShip2.drawShape(loc_color)
 
+    # pinta
+    myCoin.drawShape(loc_color, program)
+    myPlanet.drawShape(loc_color, program, dg_planet)
+    myUFO.drawShape(loc_color, program, s_ufo)
+    myShip.drawShape(loc_color, program, dg_ship, tx_ship, ty_ship)
+    uStar.drawShape(loc_color, program, dg_star)
+    rStar.drawShape(loc_color, program, dg_star)
+    ldStar.drawShape(loc_color, program, -dg_star)
+    dg_star += 0.001
+    
     # gerencia troca de dados entre janela e o OpenGL
     glfw.swap_buffers(window)
 
