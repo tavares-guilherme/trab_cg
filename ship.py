@@ -3,6 +3,7 @@ from OpenGL.GL import *
 import OpenGL.GL.shaders
 import numpy as np
 import math
+import matrix
 
 class Ship:
     def __init__(self, offset, x_0, y_0):
@@ -16,23 +17,26 @@ class Ship:
         radius = 0.05
 
         vertices = np.zeros(21, [("position", np.float32, 2)])
-        vertices[0] = [ 0.1 + self.x_0,-0.2 + self.y_0]
-        vertices[1] = [-0.1 + self.x_0,-0.2 + self.y_0]
-        vertices[2] = [ 0.1 + self.x_0, 0.2 + self.y_0]
-        vertices[3] = [-0.1 + self.x_0, 0.2 + self.y_0]
-        vertices[4] = [ 0.0 + self.x_0, 0.4 + self.y_0]
+        vertices[0] = [ 0.1,-0.2]
+        vertices[1] = [-0.1,-0.2]
+        vertices[2] = [ 0.1, 0.2]
+        vertices[3] = [-0.1, 0.2]
+        vertices[4] = [ 0.0, 0.4]
 
         for i in range(step):
             angle = math.pi * (2 * i/step)
-            x = math.cos(angle)*radius + self.x_0
-            y = math.sin(angle)*radius + self.y_0 + 1.5 * radius
+            x = math.cos(angle)*radius
+            y = math.sin(angle)*radius + 1.5 * radius
 
             vertices[i+5] = [x,y]
 
         
         return vertices
 
-    def drawShape(self, loc_color):
+    def drawShape(self, loc_color, program, dg, tx, ty):
+        mat_transformation = matrix.getMatrix(1, dg, self.x_0 + tx, self.y_0 + ty)
+        loc = glGetUniformLocation(program, "mat_transformation")
+        glUniformMatrix4fv(loc, 1, GL_TRUE, mat_transformation)
 
         # red body
         rValueBody = 227.0 / 255.0

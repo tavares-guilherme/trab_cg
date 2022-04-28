@@ -3,6 +3,7 @@ import glfw
 from OpenGL.GL import *
 import OpenGL.GL.shaders
 import numpy as np
+import matrix
 import math
 
 class Planet():
@@ -18,16 +19,16 @@ class Planet():
 
         vertices = np.zeros(21, [("position", np.float32, 2)])
 
-        vertices[0] = [0.0 + self.x_0, 1.4*radius + self.y_0]
-        vertices[2] = [0.6 * radius + self.x_0, 1.6*radius + self.y_0]
-        vertices[1] = [0.0 + self.x_0, 1.8*radius + self.y_0]
-        vertices[3] = [0.0 + self.x_0, 0.0 + self.y_0]
-        vertices[4] = [0.0 + self.x_0, 1.5*radius + self.y_0]
+        vertices[0] = [0.0, 1.4*radius]
+        vertices[2] = [0.6 * radius, 1.6*radius]
+        vertices[1] = [0.0, 1.8*radius]
+        vertices[3] = [0.0, 0.0]
+        vertices[4] = [0.0, 1.5*radius]
 
         for i in range(step):
             angle = math.pi * (2 * i/step)
-            x = math.cos(angle)*radius + self.x_0
-            y = math.sin(angle)*radius + self.y_0
+            x = math.cos(angle)*radius
+            y = math.sin(angle)*radius
 
             vertices[i+5] = [x,y]
         
@@ -35,7 +36,11 @@ class Planet():
 
 
 
-    def drawShape(self, loc_color):
+    def drawShape(self, loc_color, program, dg):
+        mat_transformation = matrix.getMatrix(1, dg, self.x_0, self.y_0)
+        loc = glGetUniformLocation(program, "mat_transformation")
+        glUniformMatrix4fv(loc, 1, GL_TRUE, mat_transformation)
+
         # red flag
         rValueFlag = 227.0 / 255.0
         gValueFlag = 23.0 / 255.0

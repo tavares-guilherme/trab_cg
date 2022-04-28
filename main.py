@@ -2,6 +2,7 @@ import glfw
 from OpenGL.GL import *
 import OpenGL.GL.shaders
 import numpy as np
+import math
 
 import ship, star, coin, planet, ufo
 
@@ -15,13 +16,14 @@ def initWindow():
 
     return window
 
-def vertexShader3D():
+def vertexShader():
     vertex_code = """
-            attribute vec2 position;
-            void main(){
-                gl_Position = vec4(position,0.0,1.0);
-            }
-            """
+        attribute vec2 position;
+        uniform mat4 mat_transformation;
+        void main(){
+            gl_Position = mat_transformation * vec4(position,0.0,1.0);
+        }
+    """
     
     vertex = glCreateShader(GL_VERTEX_SHADER)
     glShaderSource(vertex, vertex_code)
@@ -56,7 +58,7 @@ def fragmentShader():
 def programCreate():
     program  = glCreateProgram()
     
-    vertex = vertexShader3D()
+    vertex = vertexShader()
     glAttachShader(program, vertex)
     
     fragment = fragmentShader()
@@ -102,6 +104,30 @@ def setVertices(myCoin, uStar, rStar, ldStar, myPlanet, myShip, myUFO, offset_to
 
     return vertices
 
+def key_event(window,key,scancode,action,mods):
+    global s_ufo, dg_planet, tx_ship, ty_ship, dg_ship
+
+    if key == 265:      #cima
+        ty_ship += 0.01
+        dg_ship = 0 * math.pi
+    
+    if key == 264:      # baixo
+        ty_ship -= 0.01
+        dg_ship = 1 * math.pi
+
+    if key == 263:      #esquerda
+        tx_ship -= 0.01
+        dg_ship = 0.5 * math.pi
+
+    if key == 262:      #direita
+        tx_ship += 0.01
+        dg_ship = 1.5 * math.pi
+
+    if key ==  32: dg_planet += 0.05  # espaço
+
+    if key ==  65: s_ufo += 0.05     # A
+    if key ==  90: s_ufo -= 0.05     # Z
+
 
 myCoin = coin.Coin(0, 0.7, -0.7, 1)
 offset_at = myCoin.vertices.size
@@ -146,6 +172,14 @@ rValue= 66.0 / 255.0
 gValue= 135.0 / 255.0
 bValue= 245.0 / 255.0
 
+glfw.set_key_callback(window,key_event)
+
+s_ufo = 1
+dg_planet = 0
+tx_ship = 0
+ty_ship = 0
+dg_ship = 0
+dg_star = 0
 while not glfw.window_should_close(window):
 
     # funcao interna do glfw para gerenciar eventos de mouse, teclado, etc
@@ -154,15 +188,17 @@ while not glfw.window_should_close(window):
     # limpa a cor de fundo da janela e preenche com outra no sistema RGBA
     glClear(GL_COLOR_BUFFER_BIT)     
     glClearColor(rValue, gValue, bValue, 1.0)
-    
-    myCoin.drawShape(loc_color)
-    uStar.drawShape(loc_color)
-    rStar.drawShape(loc_color)
-    ldStar.drawShape(loc_color)
-    myPlanet.drawShape(loc_color)
-    myShip.drawShape(loc_color)
-    myUFO.drawShape(loc_color)
 
+    # pinta
+    myCoin.drawShape(loc_color, program)
+    myPlanet.drawShape(loc_color, program, dg_planet)
+    myUFO.drawShape(loc_color, program, s_ufo)
+    myShip.drawShape(loc_color, program, dg_ship, tx_ship, ty_ship)
+    uStar.drawShape(loc_color, program, dg_star)
+    rStar.drawShape(loc_color, program, dg_star)
+    ldStar.drawShape(loc_color, program, -dg_star)
+    dg_star += 0.001
+    
     # gerencia troca de dados entre janela e o OpenGL
     glfw.swap_buffers(window)
 

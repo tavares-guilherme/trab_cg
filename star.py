@@ -2,6 +2,7 @@ import glfw
 from OpenGL.GL import *
 import OpenGL.GL.shaders
 import numpy as np
+import matrix
 
 
 class Star:
@@ -16,16 +17,20 @@ class Star:
     def setVertices(self):
         vertices = np.zeros(6, [("position", np.float32, 2)])
         vertices['position'] = [
-                                    ( 0.2*self.scale + self.x_0, 0.15*self.scale + self.y_0), # vertice 0
-                                    (-0.2*self.scale + self.x_0, 0.15*self.scale + self.y_0), # vertice 3
-                                    ( 0.0*self.scale + self.x_0,-0.30*self.scale + self.y_0), # vertice 1
-                                    ( 0.2*self.scale + self.x_0,-0.15*self.scale + self.y_0), # vertice 2
-                                    (-0.2*self.scale + self.x_0,-0.15*self.scale + self.y_0), # vertice 4
-                                    ( 0.0*self.scale + self.x_0, 0.30*self.scale + self.y_0), # vertice 5
+                                    ( 0.2, 0.15), # vertice 0
+                                    (-0.2, 0.15), # vertice 3
+                                    ( 0.0,-0.30), # vertice 1
+                                    ( 0.2,-0.15), # vertice 2
+                                    (-0.2,-0.15), # vertice 4
+                                    ( 0.0, 0.30), # vertice 5
                                 ]
         return vertices
  
-    def drawShape(self, loc_color):
+    def drawShape(self, loc_color, program, dgree):
+        mat_transformation = matrix.getMatrix(self.scale, dgree, self.x_0, self.y_0)
+        loc = glGetUniformLocation(program, "mat_transformation")
+        glUniformMatrix4fv(loc, 1, GL_TRUE, mat_transformation)
+
         # yellow stars
         rValue = 222.0 / 255.0
         gValue = 212.0 / 255.0
