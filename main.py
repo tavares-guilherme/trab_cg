@@ -3,7 +3,7 @@ from OpenGL.GL import *
 import OpenGL.GL.shaders
 import numpy as np
 
-import ship, star, coin, flag
+import ship, star, coin, planet
 
 
 # Janela
@@ -71,64 +71,64 @@ def programCreate():
 
     return program
 
+def setVertices(myCoin, uStar, rStar, ldStar, myPlanet, myShip, offset_tot):
+    vertices = np.zeros(offset_tot, [("position", np.float32, 2)])
+
+    for i in range(myCoin.vertices.size):
+        vertices[i + myCoin.offset] = myCoin.vertices[i]
+        
+    for i in range(uStar.vertices.size):
+        vertices[i + uStar.offset] = uStar.vertices[i]
+
+    for i in range(rStar.vertices.size):
+        vertices[i + rStar.offset] = rStar.vertices[i]
+
+    for i in range(ldStar.vertices.size):
+        vertices[i + ldStar.offset] = ldStar.vertices[i]
+
+    for i in range(myPlanet.vertices.size):
+        vertices[i + myPlanet.offset] = myPlanet.vertices[i]
+
+    for i in range(myShip.vertices.size):
+        vertices[i + myShip.offset] = myShip.vertices[i]
+
+    buffer = glGenBuffers(1)
+    glBindBuffer(GL_ARRAY_BUFFER, buffer)
+    glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_DYNAMIC_DRAW)
+    glBindBuffer(GL_ARRAY_BUFFER, buffer)
+
+    return vertices
+
+
+myCoin = coin.Coin(0, 0.7, -0.7, 1)
+offset_at = myCoin.vertices.size
+
+uStar = star.Star(offset_at, 0.15, 0.7, 0.6)
+offset_at += uStar.vertices.size
+
+rStar = star.Star(offset_at, 0.6, -0.2, 0.5)
+offset_at += rStar.vertices.size
+
+ldStar = star.Star(offset_at, -0.6, -0.6, 0.5)
+offset_at += ldStar.vertices.size
+
+myPlanet = planet.Planet(offset_at, 0.7, 0.6)
+offset_at += myPlanet.vertices.size
+
+myShip = ship.Ship(offset_at, -0.5, 0.5)
+offset_at += myShip.vertices.size
+
+
 window = initWindow()
 program = programCreate()
 
-
-count = 0
-vertices = np.zeros(84, [("position", np.float32, 2)])
-
-# Get the Coin points
-myCoin = coin.Coin();myCoin.findPoints()
-myCoin.offset = count;count += myCoin.vertices.size; 
-for i in range(myCoin.vertices.size):
-    vertices[i+myCoin.offset] = myCoin.vertices[i]
-
-# Get the Star points
-myStar = star.Star()
-myStar.offset = count;count += myStar.vertices.size; 
-for i in range(myStar.vertices.size):
-    vertices[i+myStar.offset-1] = myStar.vertices[i]
-
-# Get the Flag points
-myFlag = flag.Flag()
-myFlag.offset = count;count += myFlag.vertices.size; 
-vertices = np.append(vertices, myFlag.vertices)
-for i in range(myFlag.vertices.size):
-   vertices[i+myFlag.offset-1] = myFlag.vertices[i]
-
-# Get Ship1 points
-myShip1 = ship.Ship1()
-myShip1.offset = count;count += myShip1.vertices.size; 
-vertices = np.append(vertices, myShip1.vertices)
-for i in range(myShip1.vertices.size):
-   vertices[i+myShip1.offset-1] = myShip1.vertices[i]
-
-
-# Get Ship2 points
-myShip2 = ship.Ship2()
-myShip2.offset = count;count += myShip2.vertices.size; 
-vertices = np.append(vertices, myShip2.vertices)
-for i in range(myShip2.vertices.size):
-   vertices[i+myShip2.offset-1] = myShip2.vertices[i]
-
-
-buffer = glGenBuffers(1)
-
-# Make this buffer the default one
-glBindBuffer(GL_ARRAY_BUFFER, buffer)
-
-glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_DYNAMIC_DRAW)
-glBindBuffer(GL_ARRAY_BUFFER, buffer)
-
-# Bind the position attribute
-# --------------------------------------
+vertices = setVertices(myCoin, myPlanet, uStar, rStar, ldStar, myShip, offset_at)
 stride = vertices.strides[0]
 offset = ctypes.c_void_p(0)
 
+
 loc = glGetAttribLocation(program, "position")
 glEnableVertexAttribArray(loc)
-
 glVertexAttribPointer(loc, 2, GL_FLOAT, False, stride, offset)
 
 loc_color = glGetUniformLocation(program, "color")
@@ -150,10 +150,11 @@ while not glfw.window_should_close(window):
     glClearColor(rValue, gValue, bValue, 1.0)
     
     myCoin.drawShape(loc_color)
-    myStar.drawShape(loc_color)
-    myFlag.drawShape()
-    myShip1.drawShape(loc_color)
-    myShip2.drawShape(loc_color)
+    uStar.drawShape(loc_color)
+    rStar.drawShape(loc_color)
+    ldStar.drawShape(loc_color)
+    myPlanet.drawShape(loc_color)
+    myShip.drawShape(loc_color)
 
     # gerencia troca de dados entre janela e o OpenGL
     glfw.swap_buffers(window)
