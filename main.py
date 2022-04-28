@@ -3,7 +3,7 @@ from OpenGL.GL import *
 import OpenGL.GL.shaders
 import numpy as np
 
-import ship, star, coin, planet
+import ship, star, coin, planet, ufo
 
 
 # Janela
@@ -71,7 +71,7 @@ def programCreate():
 
     return program
 
-def setVertices(myCoin, uStar, rStar, ldStar, myPlanet, myShip, offset_tot):
+def setVertices(myCoin, uStar, rStar, ldStar, myPlanet, myShip, myUFO, offset_tot):
     vertices = np.zeros(offset_tot, [("position", np.float32, 2)])
 
     for i in range(myCoin.vertices.size):
@@ -91,6 +91,9 @@ def setVertices(myCoin, uStar, rStar, ldStar, myPlanet, myShip, offset_tot):
 
     for i in range(myShip.vertices.size):
         vertices[i + myShip.offset] = myShip.vertices[i]
+
+    for i in range(myUFO.vertices.size):
+        vertices[i + myUFO.offset] = myUFO.vertices[i]
 
     buffer = glGenBuffers(1)
     glBindBuffer(GL_ARRAY_BUFFER, buffer)
@@ -118,11 +121,14 @@ offset_at += myPlanet.vertices.size
 myShip = ship.Ship(offset_at, -0.5, 0.5)
 offset_at += myShip.vertices.size
 
+myUFO = ufo.UFO(offset_at, 0, -0.7)
+offset_at += myUFO.vertices.size
+
 
 window = initWindow()
 program = programCreate()
 
-vertices = setVertices(myCoin, myPlanet, uStar, rStar, ldStar, myShip, offset_at)
+vertices = setVertices(myCoin, myPlanet, uStar, rStar, ldStar, myShip, myUFO, offset_at)
 stride = vertices.strides[0]
 offset = ctypes.c_void_p(0)
 
@@ -155,6 +161,7 @@ while not glfw.window_should_close(window):
     ldStar.drawShape(loc_color)
     myPlanet.drawShape(loc_color)
     myShip.drawShape(loc_color)
+    myUFO.drawShape(loc_color)
 
     # gerencia troca de dados entre janela e o OpenGL
     glfw.swap_buffers(window)
