@@ -26,4 +26,10 @@ class Star:
         return vertices
  
     def drawShape(self, loc_color):
+        # yellow stars
+        rValue = 222.0 / 255.0
+        gValue = 212.0 / 255.0
+        bValue = 18.0 / 255.0
+
+        glUniform4f(loc_color, rValue, gValue, bValue, 1.0) 
         glDrawArrays(GL_TRIANGLES, self.offset, 6)  

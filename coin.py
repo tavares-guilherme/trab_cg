@@ -33,10 +33,15 @@ class Coin:
 
 
     def drawShape(self, loc_color):
-        glUniform4f(loc_color, 204, 204, 51, 1.0) 
+        # silver coin
+        rValue = 118.0 / 255.0
+        gValue = 133.0 / 255.0
+        bValue = 107.0 / 255.0
+
+        glUniform4f(loc_color, rValue, gValue, bValue, 1.0) 
         glDrawArrays(GL_TRIANGLE_FAN, 0, 32)    
 
-        glUniform4f(loc_color, 0, 200, 0, 1.0)  
+        glUniform4f(loc_color, 1, 1, 1, 1.0)
         glDrawArrays(GL_TRIANGLE_FAN, 32, 31)         
                             
 

@@ -33,11 +33,22 @@ class Ship:
         return vertices
 
     def drawShape(self, loc_color):
-        glUniform4f(loc_color, 225.0/255, 71.0/255, 71.0/255, 1.0)  
-        glDrawArrays(GL_TRIANGLE_STRIP, self.offset, 4)    
 
-        glUniform4f(loc_color, 0.5, 134.0/255, 59.0/255, 1.0)      
+        # red body
+        rValueBody = 227.0 / 255.0
+        gValueBody = 23.0 / 255.0
+        bValueBody = 70.0 / 255.0
+        glUniform4f(loc_color, rValueBody, gValueBody, bValueBody, 1.0)  
+        glDrawArrays(GL_TRIANGLE_STRIP, self.offset, 4)
+
+         # green top
+        rValueTop = 115.0 / 255.0
+        gValueTop = 222.0 / 255.0
+        bValueTop = 33.0 / 255.0
+        glUniform4f(loc_color, rValueTop, gValueTop, bValueTop, 1.0)   
         glDrawArrays(GL_TRIANGLES, self.offset + 2, 3)
 
-        glUniform4f(loc_color, 204, 204, 51, 1.0) 
+        # white window
+        ValueWindow = 1
+        glUniform4f(loc_color, ValueWindow, ValueWindow, ValueWindow, 1.0) 
         glDrawArrays(GL_TRIANGLE_FAN, self.offset + 5, 16)

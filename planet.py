@@ -33,9 +33,22 @@ class Planet():
         
         return vertices
 
+
+
     def drawShape(self, loc_color):
+        # red flag
+        rValueFlag = 227.0 / 255.0
+        gValueFlag = 23.0 / 255.0
+        bValueFlag = 70.0 / 255.0
+
+        # orange planet
+        rValuePlanet = 135.0 / 255.0
+        gValuePlanet = 68.0 / 255.0
+        bValuePlanet = 9.0 / 255.0
+
+        glUniform4f(loc_color, rValueFlag, gValueFlag, bValueFlag, 1.0) 
         glDrawArrays(GL_TRIANGLES, self.offset, 3)
         glDrawArrays(GL_LINES, self.offset+3, 2)
 
-        glUniform4f(loc_color, 204, 204, 51, 1.0) 
+        glUniform4f(loc_color, rValuePlanet, gValuePlanet, bValuePlanet, 1.0) 
         glDrawArrays(GL_TRIANGLE_FAN, self.offset+5, 16)    
