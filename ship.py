@@ -17,16 +17,19 @@ class Ship:
         radius = 0.05
 
         vertices = np.zeros(21, [("position", np.float32, 2)])
-        vertices[0] = [ 0.1,-0.2]
-        vertices[1] = [-0.1,-0.2]
-        vertices[2] = [ 0.1, 0.2]
-        vertices[3] = [-0.1, 0.2]
-        vertices[4] = [ 0.0, 0.4]
-
+        # Retangulo
+        vertices[0] = [ 0.1,-0.1]
+        vertices[1] = [-0.1,-0.1]
+        vertices[2] = [ 0.1, 0.1]
+        vertices[3] = [-0.1, 0.1]
+        # Ponta da nave
+        vertices[4] = [ 0.0, 0.16]
+        
+        # Circulo
         for i in range(step):
             angle = math.pi * (2 * i/step)
             x = math.cos(angle)*radius
-            y = math.sin(angle)*radius + 1.5 * radius
+            y = math.sin(angle)*radius + 0.75 * radius
 
             vertices[i+5] = [x,y]
 

@@ -40,7 +40,7 @@ class UFO:
 
 
     def drawShape(self, loc_color, program, size):
-        mat_transformation = matrix.getMatrix(size, 0, self.x_0, self.y_0)
+        mat_transformation = matrix.getMatrix(size*2, 0, self.x_0, self.y_0)
         loc = glGetUniformLocation(program, "mat_transformation")
         glUniformMatrix4fv(loc, 1, GL_TRUE, mat_transformation)
 
