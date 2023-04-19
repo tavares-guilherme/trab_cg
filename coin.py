@@ -12,7 +12,11 @@ class Coin:
         self.y_0 = y_0
         self.scale = scale
         self.vertices = self.setVertices()
+        self.show = True
         
+
+    def setShow(self, s):
+        self.show = s
 
     def setVertices(self):
         vertices = np.zeros(64, [("position", np.float32, 2)])
@@ -34,7 +38,14 @@ class Coin:
 
 
     def drawShape(self, loc_color, program):
-        mat_transformation = matrix.getMatrix(1, 0, self.x_0, self.y_0)
+        
+        # Realiza uma operação de escala para 0, se não puder ser dividida
+        if(self.show):
+            size = 1
+        else:
+            size = 0
+
+        mat_transformation = matrix.getMatrix(size*1, 0, self.x_0, self.y_0)
         loc = glGetUniformLocation(program, "mat_transformation")
         glUniformMatrix4fv(loc, 1, GL_TRUE, mat_transformation)
 

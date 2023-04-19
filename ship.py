@@ -11,6 +11,10 @@ class Ship:
         self.x_0 = x_0
         self.y_0 = y_0
         self.vertices = self.setVertices()
+        self.wColor = 1
+
+    def setWColor(self, color):
+        self.wColor = color
 
     def setVertices(self):
         step = 16
@@ -56,6 +60,10 @@ class Ship:
         glDrawArrays(GL_TRIANGLES, self.offset + 2, 3)
 
         # white window
-        ValueWindow = 1
+        if(self.wColor == 1):
+            ValueWindow = 1
+        else:
+            ValueWindow = 118.0 / 255.0
+        
         glUniform4f(loc_color, ValueWindow, ValueWindow, ValueWindow, 1.0) 
         glDrawArrays(GL_TRIANGLE_FAN, self.offset + 5, 16)

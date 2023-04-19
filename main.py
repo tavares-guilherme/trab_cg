@@ -132,8 +132,12 @@ def key_event(window,key,scancode,action,mods):
 
     if key ==  32: dg_planet += 0.05  # espaço
 
-    if key ==  65: s_ufo += 0.05     # A
-    if key ==  90: s_ufo -= 0.05     # Z
+    if key ==  65:
+        s_ufo += 0.05     # A
+        newGame.updateUfoRange(1)
+    if key ==  90: 
+        s_ufo -= 0.05     # Z
+        newGame.updateUfoRange(2)
 
 # Inicia os objetos
 
@@ -165,16 +169,17 @@ stars.append(game.hitBox(-0.2, 0, 0.1))
 
 myPlanet = planet.Planet(offset_at, 0.7, 0.6)
 offset_at += myPlanet.vertices.size
-objPlanet = game.hitBox(0.7, 0.6, 0.09)
+objPlanet = game.hitBox(0.7, 0.6, 0.14)
 
 myShip = ship.Ship(offset_at, -0.5, 0.5)
 offset_at += myShip.vertices.size
-objShip = game.hitBox(-0.5, 0.5, 0.058)
+objShip = game.hitBox(-0.5, 0.5, 0.07)
 
 myUFO = ufo.UFO(offset_at, 0, -0.7)
 offset_at += myUFO.vertices.size
+objUFO = game.hitBox(0, -0.7, 0.12)
 
-newGame = game.Game(objCoin, stars, objPlanet, objShip) 
+newGame = game.Game(objCoin, stars, objPlanet, objShip, objUFO) 
 
 window = initWindow()
 program = programCreate()
@@ -199,13 +204,12 @@ bValue= 0.0 / 255.0
 
 glfw.set_key_callback(window,key_event)
 
-s_ufo = 1
+s_ufo = 1.8
 dg_planet = 0
 tx_ship = 0
 ty_ship = 0
 dg_ship = 0
 dg_star = 0
-showCoin = True
 
 while not glfw.window_should_close(window):
     
@@ -217,17 +221,24 @@ while not glfw.window_should_close(window):
     if(gameState == 0):
         ty_ship = 0
         tx_ship = 0
-        ShowCoin = True
+        bValue = 0
+        rValue = 0
+        myCoin.setShow(1)
+        myShip.setWColor(1)
     if(gameState == 2):
-        ShowCoin = False
-        bValue = 100
+        myCoin.setShow(0)
+        bValue = 1
+        myShip.setWColor(2)
+    if(gameState == 3): 
+        myShip.setWColor(1)
+        rValue = 2
+        print("Fim de jogo!")
 
     # limpa a cor de fundo da janela e preenche com outra no sistema RGBA
     glClear(GL_COLOR_BUFFER_BIT)     
     glClearColor(rValue, gValue, bValue, 1.0)
 
-    if(showCoin):
-        myCoin.drawShape(loc_color, program)
+    myCoin.drawShape(loc_color, program)
     myPlanet.drawShape(loc_color, program, dg_planet)
     myUFO.drawShape(loc_color, program, s_ufo)
     myShip.drawShape(loc_color, program, dg_ship, tx_ship, ty_ship)
